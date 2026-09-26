@@ -93,5 +93,87 @@ This Power BI project consolidates match-level and player-level statistics for P
 ---
 
 ## 📐 Data Model & Schema
+### Table Definitions:
+* **`Batting`**: Fact table storing match innings, runs, balls faced, boundary counts (4s/6s), and strike rates.
+* **`Bowling`**: Fact table capturing overs bowled, runs conceded, wickets taken, economy rates, and bowling averages.
+* **`Dim_Player`**: Dimension table containing player attributes (`batter`, `bowler`).
+* **`Dim_Date`**: Calendar dimension supporting date filtering (`Date`, `Year`).
+* **`Matches`**: Match metadata including `Match_ID`, `Series`, `Opponent`, `Result`, and match margins.
+* **`Venues`**: Location metadata including `Venue`, `City`, `Country`, `Latitude`, and `Longitude`.
+
+---
+
+## 📊 Dashboard Structure & Visual Breakdown
+
+The dashboard is structured into **3 analytical pages**:
+
+### 1️⃣ Page 1: Batting Performance (`Batting`)
+* **Top KPI Scorecards:** Total Runs Scored, Team Batting Average, Overall Strike Rate, and Total Wickets.
+* **Detailed Matrix Visual:** Player-level breakdown displaying `Total Runs`, `Batting Average`, `Strike Rate`, `Total 100s`, `Total 50s`, `Total Wickets`, and `Bowling Economy`.
+* **Clustered Bar Chart:** Top run-scorers ordered by aggregate runs.
+* **Geospatial Map:** World map visual displaying total runs scored by `Venue`, `City`, and `Country` using exact geographic coordinates.
+* **Slicers:** Global filters for `Dim_Date[Year]` and `Matches[Opponent]`.
+
+### 2️⃣ Page 2: Wicket & Dismissal Analysis (`wicket`)
+* **Clustered Bar Chart:** Dismissal patterns, wicket distribution, and bowler comparisons across bowling average, economy, and total wickets.
+* **Deep-Dive Breakdown:** Analysis of batting stability and dismissal frequency under varying match conditions.
+
+### 3️⃣ Page 3: Bowling Performance (`Bowling`)
+* **Bowling KPI Cards:** Total Wickets, Bowling Economy, Bowling Average, and Batting Average comparative baseline.
+* **Scatter Plot:** Multi-variable chart comparing `Total Wickets` vs. `Bowling Economy` vs. `Bowling Average` per bowler to identify high-efficiency wicket-takers.
+* **Treemap:** Hierarchical visualization of total wickets grouped by `Host Country` and `Player`.
+* **Geospatial Bowling Map:** Venue-level bowling economy and average heat indicators.
+
+---
+
+## 🧮 Core DAX Measures
+
+```dax
+// Total Runs Measure
+Total Runs = SUM(Batting[Runs])
+
+// Batting Average Measure
+Batting Average = 
+DIVIDE(
+    SUM(Batting[Runs]), 
+    COUNT(Batting[Innings]), 
+    0
+)
+
+// Strike Rate Measure
+Strike Rate = 
+DIVIDE(
+    SUM(Batting[Runs]), 
+    SUM(Batting[Balls]), 
+    0
+) * 100
+
+// Total Wickets Measure
+Total Wickets = SUM(Bowling[Wickets])
+
+// Bowling Economy Measure
+Bowling Economy = 
+DIVIDE(
+    SUM(Bowling[Runs_Conceded]), 
+    DIVIDE(SUM(Bowling[Overs]), 1, 0), 
+    0
+)
+
+// Total Centuries (100s)
+Total 100s = 
+CALCULATE(
+    COUNTROWS(Batting), 
+    Batting[Runs] >= 100
+)
+
+// Total Half-Centuries (50s)
+Total 50s = 
+CALCULATE(
+    COUNTROWS(Batting), 
+    Batting[Runs] >= 50 && Batting[Runs] < 100
+)
+
+git clone [https://github.com/Abdullahprobro/PAKISTAN-MEN-S-TEST-TEAM-ANALYTICS-2024--2026-.git](https://github.com/Abdullahprobro/PAKISTAN-MEN-S-TEST-TEAM-ANALYTICS-2024--2026-.git)
+cd PAKISTAN-MEN-S-TEST-TEAM-ANALYTICS-2024--2026-
 
 The data model uses a clean **Star Schema** centered around core batting and bowling fact tables connected to explicit dimension tables:
